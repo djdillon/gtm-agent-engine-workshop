@@ -16,6 +16,7 @@ __all__ = [
     "get_offering", "get_prospect_record", "update_prospect_info",
     "fetch_engagement_history", "fetch_account_details", "fetch_tech_stack",
     "get_profile_from_db", "save_profile_to_db",
+    "invalidate_profile",
     "get_rep",
 ]
 
@@ -72,6 +73,12 @@ def save_profile_to_db(prospect_id, profile):
     _PROFILES[prospect_id] = profile
     return {"saved": True}
 
+
+def invalidate_profile(prospect_id):
+    "Remove a prospect profile from the in-memory cache."
+    _PROFILES.pop(prospect_id, None)
+
+
 def update_prospect_info(prospect_id, technology):
     "Add a technology to a prospect's source-of-truth record."
     record = PROSPECTS.get(prospect_id)
@@ -80,4 +87,6 @@ def update_prospect_info(prospect_id, technology):
     tech_stack = list(record["tech_stack"])
     if technology not in tech_stack:
         tech_stack.append(technology)
+    record["tech_stack"] = tech_stack
+    invalidate_profile(prospect_id)
     return {"updated": True, "found": True, "tech_stack": tech_stack}
